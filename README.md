@@ -1,7 +1,7 @@
 ytdl-archival-utility
 =====================
 
-An easy to use youtube-dl based downloader, mainly for VTuber content
+An easy to use YouTube based downloader, mainly for VTuber content
 
 [![oclif](https://img.shields.io/badge/cli-oclif-brightgreen.svg)](https://oclif.io)
 [![Version](https://img.shields.io/npm/v/ytdl-archival-utility.svg)](https://npmjs.org/package/ytdl-archival-utility)

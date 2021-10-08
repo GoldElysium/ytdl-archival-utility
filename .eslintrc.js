@@ -9,6 +9,7 @@ module.exports = {
 		'airbnb-base',
 		'airbnb-typescript/base',
 	],
+	parser: '@typescript-eslint/parser',
 	parserOptions: {
 		ecmaVersion: 12,
 		sourceType: 'module',
@@ -17,7 +18,6 @@ module.exports = {
 	plugins: [
 		'@typescript-eslint',
 	],
-	parser: '@typescript-eslint/parser',
 	rules: {
 		indent: 'off',
 		'no-tabs': 'off',
@@ -25,5 +25,8 @@ module.exports = {
 		'no-plusplus': ['error', {
 			allowForLoopAfterthoughts: true,
 		}],
+		'unicorn/no-process-exit': 'off',
+		'unicorn/import-style': 'off',
+		'unicorn/prefer-module': 'off',
 	},
 };
