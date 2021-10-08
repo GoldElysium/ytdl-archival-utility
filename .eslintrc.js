@@ -28,5 +28,6 @@ module.exports = {
 		'unicorn/no-process-exit': 'off',
 		'unicorn/import-style': 'off',
 		'unicorn/prefer-module': 'off',
+		'no-restricted-syntax': 'off',
 	},
 };

@@ -1,9 +1,10 @@
 import { Command, flags as Flags } from '@oclif/command';
-import * as ytdl from 'ytdl-core';
-import * as inquirer from 'inquirer';
+import ytdl from 'ytdl-core';
+import inquirer from 'inquirer';
 import { cli } from 'cli-ux';
-import chalk = require('chalk');
-import { firstInit } from './util';
+import chalk from 'chalk';
+import sanitize from 'sanitize-filename';
+import { findYTSubConverter } from './util';
 import { Answers, download } from './downloader';
 
 class YtdlArchivalUtility extends Command {
@@ -31,7 +32,6 @@ class YtdlArchivalUtility extends Command {
 			exclusive: ['extension'],
 		}),
 		keep: Flags.boolean({ char: 'k', description: 'keep all downloaded files' }),
-		'disable-backup': Flags.boolean({ description: 'disable keeping a backup in case file modifications are needed' }),
 		subtitles: Flags.boolean({ description: 'download subtitles and embed' }),
 		'no-subs-embed': Flags.boolean({ description: 'don\'t embed subtitles' }),
 		'no-ui': Flags.boolean({ description: 'use flags instead of UI', dependsOn: ['url'] }),
@@ -42,12 +42,27 @@ class YtdlArchivalUtility extends Command {
 	async run(): Promise<void> {
 		const { args, flags } = this.parse(YtdlArchivalUtility);
 
-		await firstInit();
+		const YTSubConverterCommand = await findYTSubConverter();
 
 		const prompt = inquirer.createPromptModule();
 
-		if (flags['no-ui']) download(flags as Answers);
-		else {
+		if (flags['no-ui']) {
+			const ytdlInfo = await ytdl.getBasicInfo(flags.url!);
+
+			if (!ytdlInfo) {
+				cli.log(`${chalk.red.bold('ERROR:')} Failed to get video info.`);
+				cli.exit(1);
+			}
+
+			const { videoDetails: info } = ytdlInfo;
+
+			await download({
+				...flags,
+				output: sanitize(flags.output ?? `${info.uploadDate} - ${info.title}`, {
+					replacement: '_',
+				}),
+			} as Answers, YTSubConverterCommand);
+		} else {
 			const answers = await prompt([
 				{
 					message: 'What\'s the YouTube video link?',
@@ -71,7 +86,7 @@ class YtdlArchivalUtility extends Command {
 							.catch(reject);
 
 						if (!ytdlInfo) {
-							cli.log(`${chalk.red.bold('ERROR:')} Failed to download YTSubConverter.`);
+							cli.log(`${chalk.red.bold('ERROR:')} Failed to get video info.`);
 							cli.exit(1);
 						}
 
@@ -87,12 +102,13 @@ class YtdlArchivalUtility extends Command {
 					when: typeof flags.subtitles === 'undefined',
 				},
 				{
-					message: 'File extension (If you don\'t select MKV, subtitles will be burned in)',
+					message: 'File extension',
 					type: 'list',
 					default: 'auto',
 					choices: ['auto', 'mkv', 'mp4', 'webm'],
 					name: 'extension',
-					when: !(flags.extension ?? flags.ext),
+					// eslint-disable-next-line max-len
+					when: (currentAnswers) => !(flags.extension ?? flags.ext) && !(flags.subtitles || currentAnswers.subtitles),
 				},
 				{
 					message: 'Additional options',
@@ -106,12 +122,6 @@ class YtdlArchivalUtility extends Command {
 							disabled: flags.keep,
 						},
 						{
-							value: 'disable-backup',
-							name: 'Disable keeping a backup in case file modifications are needed',
-							checked: flags['disable-backup'],
-							disabled: flags['disable-backup'],
-						},
-						{
 							value: 'no-subs-embed',
 							name: 'Don\'t embed subtitles',
 							checked: flags['no-subs-embed'],
@@ -121,17 +131,16 @@ class YtdlArchivalUtility extends Command {
 				},
 			]);
 
-			download({
+			await download({
 				url: (args.url && ytdl.validateURL(args.url) ? args.url : undefined)
 				?? (flags.url && ytdl.validateURL(flags.url) ? flags.url : undefined)
 				?? answers.url,
-				output: flags.output ?? answers.output,
+				output: sanitize(flags.output ?? answers.output, { replacement: '_' }),
 				subtitles: flags.subtitles || answers.subtitles || false,
 				extension: flags.extension ?? flags.ext ?? answers.output,
 				keep: flags.keep || answers.extra.includes('keep'),
-				'disable-backup': flags['disable-backup'] || answers.extra.includes('disable-backup'),
 				'no-subs-embed': flags['no-subs-embed'] || answers.extra.includes('no-subs-embed'),
-			});
+			}, YTSubConverterCommand);
 		}
 	}
 }

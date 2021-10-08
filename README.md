@@ -19,7 +19,7 @@ $ npm install -g ytdl-archival-utility
 $ vdownloader COMMAND
 running command...
 $ vdownloader (-v|--version|version)
-ytdl-archival-utility/1.0.0 linux-x64 node-v16.6.2
+ytdl-archival-utility/0.0.1 linux-x64 node-v16.10.0
 $ vdownloader --help [COMMAND]
 USAGE
   $ vdownloader COMMAND
