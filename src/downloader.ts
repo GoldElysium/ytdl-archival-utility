@@ -264,5 +264,15 @@ export async function download(answers: Answers, YTSubConverterCommand: string):
 			}
 			cli.action.stop();
 			cli.log(`${chalk.green.bold()}Finished!`);
+		})
+		.on('end', () => {
+			if (!answers.keep) {
+				try {
+					fs.unlinkSync(videoFile);
+					fs.unlinkSync(audioFile);
+				} catch {}
+			}
+			cli.action.stop();
+			cli.log(`${chalk.green.bold()}Finished!`);
 		});
 }
