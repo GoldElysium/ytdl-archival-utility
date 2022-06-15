@@ -42,6 +42,10 @@ export async function download(answers: Answers, YTSubConverterCommand: string):
 			cli.exit(1);
 		});
 
+	if (!info) {
+		return;
+	}
+
 	// Get the formats to determine the file container
 	const videoFormat = ytdl.chooseFormat(info.formats, { quality: 'highestvideo' });
 	const audioFormat = ytdl.chooseFormat(info.formats, { quality: 'highestaudio' });
@@ -56,10 +60,13 @@ export async function download(answers: Answers, YTSubConverterCommand: string):
 	const videoDownloadPromise = new Promise<void>((resolve) => {
 		debug('Starting download');
 		const videoProgress = downloadBar.create(100, 0, { filename: `${answers.output}.${videoFormat.container}` });
+
 		let firstRun = true;
+
 		const videoDownload = ytdl.downloadFromInfo(info, {
 			quality: 'highestvideo',
 		});
+
 		videoDownload.on('progress', (_, downloaded, total) => {
 			if (firstRun) {
 				videoProgress.setTotal(total);
@@ -67,8 +74,15 @@ export async function download(answers: Answers, YTSubConverterCommand: string):
 			}
 			videoProgress.update(downloaded);
 		});
+
 		videoDownload.pipe(fs.createWriteStream(path.resolve(`${answers.output}.${videoFormat.container}`)));
+
 		videoDownload.on('finish', () => {
+			debug('Video finished downloading');
+			resolve();
+		});
+
+		videoDownload.on('end', () => {
 			debug('Video finished downloading');
 			resolve();
 		});
@@ -76,10 +90,13 @@ export async function download(answers: Answers, YTSubConverterCommand: string):
 
 	const audioDownloadPromise = new Promise<void>((resolve) => {
 		const audioProgress = downloadBar.create(100, 0, { filename: `${answers.output}.${audioFormat.container}` });
+
 		let firstRun = true;
+
 		const audioDownload = ytdl.downloadFromInfo(info, {
 			quality: 'highestaudio',
 		});
+
 		audioDownload.on('progress', (_, downloaded, total) => {
 			if (firstRun) {
 				audioProgress.setTotal(total);
@@ -87,14 +104,23 @@ export async function download(answers: Answers, YTSubConverterCommand: string):
 			}
 			audioProgress.update(downloaded);
 		});
+
 		audioDownload.pipe(fs.createWriteStream(path.resolve(`${answers.output}.${audioFormat.container}`)));
+
 		audioDownload.on('finish', () => {
 			debug('Audio finished downloading');
 			resolve();
 		});
+
+		audioDownload.on('end', () => {
+			debug('Audio finished downloading');
+			resolve();
+		});
 	});
+
 	const { thumbnails } = info.videoDetails;
 	let thumbnailDownload = Promise.resolve();
+
 	if (thumbnails.length > 0) {
 		const { url } = thumbnails[thumbnails.length - 1];
 		thumbnailDownload = pipeline(
@@ -102,6 +128,7 @@ export async function download(answers: Answers, YTSubConverterCommand: string):
 			fs.createWriteStream(path.resolve(`${answers.output}.${url.split('/').pop()?.split('.').pop()
 				?.split('?')[0] ?? 'jpg'}`)),
 		);
+		debug('Added thumbnail download');
 	}
 
 	const subtitleDownloadPromise = new Promise<void>((resolve) => {
@@ -109,11 +136,13 @@ export async function download(answers: Answers, YTSubConverterCommand: string):
 			const promises: Promise<void>[] = [];
 			for (const caption of captions) {
 				promises.push(new Promise((resolvePromise) => {
+					debug(caption.baseUrl);
 					// Download subtitles in srv3 format (YT proprietary format afaik)
 					pipeline(
 						got.stream(`${caption.baseUrl}&fmt=srv3`),
 						fs.createWriteStream(path.resolve(`${answers.output}.${caption.name.simpleText}.srv3`)),
 					).then(() => {
+						debug(`Converting ${caption.name.simpleText}`);
 						// eslint-disable-next-line max-len
 						// Convert the subtitle from .srv3 to .ass with the --visual parameter to recreate how it'd look on YT
 						child_process.exec(`${YTSubConverterCommand} --visual "${answers.output}.${caption.name.simpleText}.srv3"`,
@@ -131,6 +160,7 @@ export async function download(answers: Answers, YTSubConverterCommand: string):
 										fs.unlinkSync(path.resolve(`${answers.output}.${caption.name.simpleText}.srv3`));
 									} catch {}
 								}
+								debug(`Finished downloading and converting ${caption.name.simpleText}`);
 								resolvePromise();
 							});
 					}).catch((error) => {
@@ -141,7 +171,7 @@ export async function download(answers: Answers, YTSubConverterCommand: string):
 				}));
 			}
 			Promise.all(promises).then(() => resolve());
-		}
+		} else resolve();
 	});
 
 	await Promise.all([
@@ -150,6 +180,7 @@ export async function download(answers: Answers, YTSubConverterCommand: string):
 		thumbnailDownload,
 		subtitleDownloadPromise,
 	]);
+	debug('Done downloading');
 
 	downloadBar.stop();
 	cli.action.stop();
@@ -182,11 +213,14 @@ export async function download(answers: Answers, YTSubConverterCommand: string):
 	// Add video and audio stream
 	const videoFile = path.resolve(`${answers.output}.${videoFormat.container}`);
 	const audioFile = path.resolve(`${answers.output}.${audioFormat.container}`);
+
 	debug(`Added input: ${videoFile}`);
 	debug(`Added input: ${audioFile}`);
+
 	mergeCommand
 		.addInput(videoFile)
 		.addInput(audioFile);
+
 	if (fileExt === 'mkv') {
 		mergeCommand.videoCodec('copy');
 		mergeCommand.audioCodec('copy');
@@ -222,6 +256,12 @@ export async function download(answers: Answers, YTSubConverterCommand: string):
 			cli.exit(1);
 		})
 		.on('finish', () => {
+			if (!answers.keep) {
+				try {
+					fs.unlinkSync(videoFile);
+					fs.unlinkSync(audioFile);
+				} catch {}
+			}
 			cli.action.stop();
 			cli.log(`${chalk.green.bold()}Finished!`);
 		});
