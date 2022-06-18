@@ -10,7 +10,7 @@
     "url": "https://github.com/GoldElysium/ytdl-archival-utility/issues"
   },
   "devDependencies": {
-    "@oclif/dev-cli": "1.26.0",
+    "@oclif/dev-cli": "1.26.10",
     "@oclif/test": "1.2.8",
     "@types/chai": "4.2.22",
     "@types/cli-progress": "3.9.2",
