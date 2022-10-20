@@ -1,11 +1,10 @@
-import { Command, flags as Flags } from '@oclif/command';
+import { Command, Flags, CliUx } from '@oclif/core';
 import ytdl from 'ytdl-core';
 import inquirer from 'inquirer';
-import { cli } from 'cli-ux';
 import chalk from 'chalk';
 import sanitize from 'sanitize-filename';
-import { findYTSubConverter } from './util';
-import { Answers, download } from './downloader';
+import { findYTSubConverter } from '../util/YTSubConvert';
+import { Answers, download } from '../util/downloader';
 
 class YtdlArchivalUtility extends Command {
 	static description = 'An easy to use youtube-dl based downloader, mainly for VTuber content';
@@ -16,7 +15,7 @@ class YtdlArchivalUtility extends Command {
 		url: Flags.option({
 			char: 'u',
 			description: 'YouTube video url',
-			parse: (input) => (ytdl.validateURL(input) ? input : undefined),
+			parse: async (input) => (ytdl.validateURL(input) ? input : undefined),
 		}),
 		output: Flags.string({ char: 'o', description: 'manually set output file', helpValue: './downloads/filename' }),
 		extension: Flags.enum({
@@ -40,7 +39,7 @@ class YtdlArchivalUtility extends Command {
 	static args = [{ name: 'url' }];
 
 	async run(): Promise<void> {
-		const { args, flags } = this.parse(YtdlArchivalUtility);
+		const { args, flags } = await this.parse(YtdlArchivalUtility);
 
 		const YTSubConverterCommand = await findYTSubConverter();
 
@@ -50,8 +49,8 @@ class YtdlArchivalUtility extends Command {
 			const ytdlInfo = await ytdl.getBasicInfo(flags.url!);
 
 			if (!ytdlInfo) {
-				cli.log(`${chalk.red.bold('ERROR:')} Failed to get video info.`);
-				cli.exit(1);
+				CliUx.ux.log(`${chalk.red.bold('ERROR:')} Failed to get video info.`);
+				CliUx.ux.exit(1);
 			}
 
 			const { videoDetails: info } = ytdlInfo;
@@ -86,8 +85,8 @@ class YtdlArchivalUtility extends Command {
 							.catch(reject);
 
 						if (!ytdlInfo) {
-							cli.log(`${chalk.red.bold('ERROR:')} Failed to get video info.`);
-							cli.exit(1);
+							CliUx.ux.log(`${chalk.red.bold('ERROR:')} Failed to get video info.`);
+							CliUx.ux.exit(1);
 						}
 
 						const { videoDetails: info } = ytdlInfo;

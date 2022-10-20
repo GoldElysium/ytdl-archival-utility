@@ -29,5 +29,6 @@ module.exports = {
 		'unicorn/import-style': 'off',
 		'unicorn/prefer-module': 'off',
 		'no-restricted-syntax': 'off',
+		'unicorn/filename-case': 'off',
 	},
 };

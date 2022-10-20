@@ -3,7 +3,7 @@ import Ffmpeg from 'fluent-ffmpeg';
 import ffmpegPath from 'ffmpeg-static';
 import { path as ffprobePath } from 'ffprobe-static';
 import Debug from 'debug';
-import { cli } from 'cli-ux';
+import { CliUx } from '@oclif/core';
 import chalk from 'chalk';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -16,7 +16,7 @@ import util from 'node:util';
 
 const pipeline = util.promisify(stream.pipeline);
 
-const debug = Debug('vdownloader');
+const debug = Debug('vdl');
 
 export interface Answers {
 	url: string;
@@ -38,8 +38,8 @@ export async function download(answers: Answers, YTSubConverterCommand: string):
 
 	const info = await ytdl.getInfo(answers.url)
 		.catch(() => {
-			cli.log(`${chalk.red.bold('ERROR:')} Failed to get video info.`);
-			cli.exit(1);
+			CliUx.ux.log(`${chalk.red.bold('ERROR:')} Failed to get video info.`);
+			CliUx.ux.exit(1);
 		});
 
 	if (!info) {
@@ -54,7 +54,7 @@ export async function download(answers: Answers, YTSubConverterCommand: string):
 
 	const downloadBar = new ProgressBar.MultiBar({ hideCursor: true },
 		ProgressBar.Presets.shades_classic);
-	cli.action.start('Downloading video');
+	CliUx.ux.action.start('Downloading video');
 
 	// Download inside a promise, so it can be awaited
 	const videoDownloadPromise = new Promise<void>((resolve) => {
@@ -152,8 +152,8 @@ export async function download(answers: Answers, YTSubConverterCommand: string):
 							(error) => {
 								if (error) {
 									debug(error);
-									cli.log(`${chalk.red.bold('ERROR:')} Failed to download subtitles.`);
-									cli.exit(1);
+									CliUx.ux.log(`${chalk.red.bold('ERROR:')} Failed to download subtitles.`);
+									CliUx.ux.exit(1);
 								}
 								if (!answers.keep) {
 									try {
@@ -165,8 +165,8 @@ export async function download(answers: Answers, YTSubConverterCommand: string):
 							});
 					}).catch((error) => {
 						debug(error);
-						cli.log(`${chalk.red.bold('ERROR:')} Failed to download subtitles.`);
-						cli.exit(1);
+						CliUx.ux.log(`${chalk.red.bold('ERROR:')} Failed to download subtitles.`);
+						CliUx.ux.exit(1);
 					});
 				}));
 			}
@@ -183,9 +183,9 @@ export async function download(answers: Answers, YTSubConverterCommand: string):
 	debug('Done downloading');
 
 	downloadBar.stop();
-	cli.action.stop();
+	CliUx.ux.action.stop();
 
-	cli.action.start('Merging files');
+	CliUx.ux.action.start('Merging files');
 
 	// Figure out a file extension, default to MKV
 	const fileExt = answers.extension === 'auto' ? 'mkv' : answers.extension;
@@ -237,11 +237,6 @@ export async function download(answers: Answers, YTSubConverterCommand: string):
 				.outputOptions(`-metadata:s:s:${i}`, `language=${languageCode}`)
 				// Add 2 because of the video and audio file
 				.outputOptions('-map', `${i + 2}`);
-			if (!answers.keep) {
-				try {
-					fs.unlinkSync(path.resolve(`${answers.output}.${caption.name.simpleText}.ass`));
-				} catch {}
-			}
 		}
 	}
 
@@ -252,8 +247,8 @@ export async function download(answers: Answers, YTSubConverterCommand: string):
 		})
 		.on('error', (error) => {
 			debug(error);
-			cli.log(`${chalk.red.bold('ERROR:')} Failed to merge files.`);
-			cli.exit(1);
+			CliUx.ux.log(`${chalk.red.bold('ERROR:')} Failed to merge files.`);
+			CliUx.ux.exit(1);
 		})
 		.on('finish', () => {
 			if (!answers.keep) {
@@ -261,9 +256,18 @@ export async function download(answers: Answers, YTSubConverterCommand: string):
 					fs.unlinkSync(videoFile);
 					fs.unlinkSync(audioFile);
 				} catch {}
+
+				if (answers.subtitles && !answers['no-subs-embed'] && captions) {
+					for (const caption of captions) {
+						try {
+							fs.unlinkSync(path.resolve(`${answers.output}.${caption.name.simpleText}.ass`));
+						} catch {}
+					}
+				}
 			}
-			cli.action.stop();
-			cli.log(`${chalk.green.bold()}Finished!`);
+
+			CliUx.ux.action.stop();
+			CliUx.ux.log(`${chalk.green.bold()}Finished!`);
 		})
 		.on('end', () => {
 			if (!answers.keep) {
@@ -271,8 +275,16 @@ export async function download(answers: Answers, YTSubConverterCommand: string):
 					fs.unlinkSync(videoFile);
 					fs.unlinkSync(audioFile);
 				} catch {}
+
+				if (answers.subtitles && !answers['no-subs-embed'] && captions) {
+					for (const caption of captions) {
+						try {
+							fs.unlinkSync(path.resolve(`${answers.output}.${caption.name.simpleText}.ass`));
+						} catch {}
+					}
+				}
 			}
-			cli.action.stop();
-			cli.log(`${chalk.green.bold()}Finished!`);
+			CliUx.ux.action.stop();
+			CliUx.ux.log(`${chalk.green.bold()}Finished!`);
 		});
 }

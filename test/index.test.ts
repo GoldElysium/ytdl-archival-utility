@@ -1,6 +1,6 @@
 import { expect, test } from '@oclif/test';
 
-import cmd = require('../src');
+import cmd = require('../src/commands');
 
 // TODO: Write tests
 describe('ytdl-archival-utility', () => {
