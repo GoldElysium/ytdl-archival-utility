@@ -35,6 +35,7 @@
 		"mocha": "9.1.2",
 		"np": "7.5.0",
 		"nyc": "15.1.0",
+		"oclif": "^3.2.19",
 		"shx": "^0.3.4",
 		"ts-node": "10.2.1",
 		"typescript": "4.4.3"
@@ -78,7 +79,7 @@
 		"lint": "eslint . --ext .ts --config .eslintrc.js",
 		"postpack": "shx rm -f oclif.manifest.json",
 		"posttest": "pnpm lint",
-		"prepack": "yarn build && oclif manifest && oclif readme",
+		"prepack": "pnpm build && oclif manifest && oclif readme",
 		"test": "mocha --forbid-only \"test/**/*.test.ts\"",
 		"version": "oclif readme && git add README.md"
 	},
