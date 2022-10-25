@@ -35,13 +35,13 @@ specifiers:
   got: ^11.8.5
   inquirer: ^8.2.4
   langs: ^2.0.0
-  makensis: ^1.1.3
+  makensis: 1.1.4
   mocha: 9.1.2
   np: 7.5.0
   nyc: 15.1.0
-  oclif: ^3.2.19
+  oclif: 3.2.22
   sanitize-filename: ^1.6.3
-  shx: ^0.3.4
+  shx: 0.3.4
   ts-node: 10.2.1
   tslib: ^2.4.0
   typescript: 4.4.3
@@ -87,11 +87,11 @@ devDependencies:
   eslint-config-oclif: 4.0.0_eslint@7.32.0
   eslint-config-oclif-typescript: 1.0.2_sek7ybhoe3wua6y4z6v7featku
   eslint-plugin-import: 2.24.2_ffi3uiz42rv3jyhs6cr7p7qqry
-  makensis: 1.1.3
+  makensis: 1.1.4
   mocha: 9.1.2
   np: 7.5.0
   nyc: 15.1.0
-  oclif: 3.2.19_7yoz4vugw4qcykie6sit5r22dm
+  oclif: 3.2.22_7yoz4vugw4qcykie6sit5r22dm
   shx: 0.3.4
   ts-node: 10.2.1_acediw7w5whfkzxu6suyjouply
   typescript: 4.4.3
@@ -774,15 +774,15 @@ packages:
       - supports-color
     dev: false
 
-  /@oclif/plugin-help/5.1.15:
-    resolution: {integrity: sha512-RfLo7vOTga/02w7jTAHFOi3m4X34Xbfyl20spg4Jq7NM6WduDaIj2auXrHW3w8OkEi4Zl/g0AvB4PIyLr+NYYw==}
+  /@oclif/plugin-help/5.1.16:
+    resolution: {integrity: sha512-30uy/bRUzptI4mFf6re1imTBxJJB2r9pQyZ7sbr8zn0oymLZX4dMArlMDi/LwpPqEtIN3fivXgDkjcoKO8ezGQ==}
     engines: {node: '>=12.0.0'}
     dependencies:
       '@oclif/core': 1.19.1
     dev: true
 
-  /@oclif/plugin-not-found/2.3.5:
-    resolution: {integrity: sha512-8c1hf6+JnWmtGQS5gBSGlbMOYLbssz0mpGytlzevHZzPes2k8EGuNQBOP2nEeyObM9HhbNjzBRjwJcjDB6zoQQ==}
+  /@oclif/plugin-not-found/2.3.6:
+    resolution: {integrity: sha512-VcO8VwHalrALUV+vZO1mEAjt1r4JM//rmW8Rw9Ca1/aITnOC58Saf8v2MpZABuu7QeJ/LbwQsZglR0MNDAbYnw==}
     engines: {node: '>=12.0.0'}
     dependencies:
       '@oclif/color': 1.0.1
@@ -4685,8 +4685,8 @@ packages:
       - supports-color
     dev: true
 
-  /makensis/1.1.3:
-    resolution: {integrity: sha512-3jHJi4Lwl8j6stSuK3CdQEkGYeTrVmMOPjbWZtS8TOEzbMCTYeYfvoOsgB5OgBSwh8UUTLKw5H/zK9PBtkORmg==}
+  /makensis/1.1.4:
+    resolution: {integrity: sha512-Yyycj9U6QuHth+HeHQbD7Nm5B3tDUugSCnluLQm15vnT3KbFJqH6sT75a9MtRJ4Oux0yo9bdE5oMHSvCzUZlpA==}
     engines: {node: ^14.13.1 || >=16.0.0}
     dependencies:
       '@nsis/language-data': 0.9.0
@@ -5376,14 +5376,14 @@ packages:
       es-abstract: 1.20.4
     dev: true
 
-  /oclif/3.2.19_7yoz4vugw4qcykie6sit5r22dm:
-    resolution: {integrity: sha512-LnJpX+YmUdFIAr86oT/++LTh9DhzAu40BhAR+dQ4H4wbOJtDylRgMnH8pAnr+Nw7DZuWe5tKTua9u1H63gEGtg==}
+  /oclif/3.2.22_7yoz4vugw4qcykie6sit5r22dm:
+    resolution: {integrity: sha512-aYfC+feIOSMo9rAfSMnPaHFImSmL5gPs6CA0mD+LZuNTEyHjWr2VMk+flqs346rP9zIcZBjZJCnsdJndwefKQQ==}
     engines: {node: '>=12.0.0'}
     hasBin: true
     dependencies:
       '@oclif/core': 1.19.1
-      '@oclif/plugin-help': 5.1.15
-      '@oclif/plugin-not-found': 2.3.5
+      '@oclif/plugin-help': 5.1.16
+      '@oclif/plugin-not-found': 2.3.6
       '@oclif/plugin-warn-if-update-available': 2.0.9
       aws-sdk: 2.1236.0
       concurrently: 7.4.0
@@ -7384,7 +7384,7 @@ packages:
       require-directory: 2.1.1
       string-width: 4.2.3
       y18n: 5.0.8
-      yargs-parser: 20.2.4
+      yargs-parser: 20.2.9
     dev: true
 
   /yargs/17.6.0:
