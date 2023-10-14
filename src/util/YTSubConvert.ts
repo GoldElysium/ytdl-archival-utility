@@ -1,10 +1,10 @@
-import * as fs from 'node:fs';
-import got from 'got';
-import * as path from 'node:path';
+import { ux } from '@oclif/core';
+import axios from 'axios';
+import chalk from 'chalk';
 import commandExists from 'command-exists';
-import { CliUx } from '@oclif/core';
-import * as chalk from 'chalk';
 import Debug from 'debug';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 
 const debug = Debug('vdl');
 
@@ -19,8 +19,8 @@ export async function findYTSubConverter(): Promise<string> {
 	// Only maps needed items
 	type GithubApiResponse = {
 		assets: {
-			name: string;
 			browser_download_url: string;
+			name: string;
 		}[];
 	};
 
@@ -30,35 +30,34 @@ export async function findYTSubConverter(): Promise<string> {
 	if (platform === 'win32') {
 		if (!fs.existsSync(path.resolve(__dirname, '../../.deps/YTSubConverter.exe'))) {
 			debug('Failed to find YTSubConverter.exe');
-			CliUx.ux.exit(0);
-			CliUx.ux.action.start('Downloading YTSubConverter.exe', 'downloading', { stdout: true });
+			// ux.exit(0);
+			ux.action.start('Downloading YTSubConverter.exe', 'downloading', { stdout: true });
 
-			const githubApiResponse: GithubApiResponse = await got('https://api.github.com/repos/arcusmaximus/YTSubConverter/releases/latest')
-				.json();
-			debug(githubApiResponse);
-			const asset = githubApiResponse.assets.find((item) => item.name.endsWith('.exe'));
+			const githubApiResponse = await axios.get<GithubApiResponse>('https://api.github.com/repos/arcusmaximus/YTSubConverter/releases/latest');
+			debug(githubApiResponse.data);
+			const asset = githubApiResponse.data.assets.find((item) => item.name.endsWith('.exe'));
 			debug(asset);
 			if (!asset) {
-				CliUx.ux.log(`${chalk.red.bold('ERROR:')} Could not find YTSubConverter.exe download link, please try again.`);
-				CliUx.ux.exit(0);
+				ux.log(`${chalk.red.bold('ERROR:')} Could not find YTSubConverter.exe download link, please try again.`);
+				ux.exit(0);
 			}
 
 			const writeStream = fs.createWriteStream(path.resolve(__dirname, '../../.deps/YTSubConverter.exe'));
-			const stream = got.stream(asset!.browser_download_url)
-				.on('error', (error) => {
+			const response = await axios.get(asset!.browser_download_url, { responseType: 'stream' })
+				.catch((error) => {
 					debug(error);
-					CliUx.ux.log(`${chalk.red.bold('ERROR:')} Failed to download YTSubConverter.`);
-					CliUx.ux.exit(1);
+					ux.log(`${chalk.red.bold('ERROR:')} Failed to download YTSubConverter.`);
+					ux.exit(1);
 				});
 
-			stream.pipe(writeStream)
-				.on('error', (error) => {
+			response.data.pipe(writeStream)
+				.on('error', (error: never) => {
 					debug(error);
-					CliUx.ux.log(`${chalk.red.bold('ERROR:')} Failed to download YTSubConverter.`);
-					CliUx.ux.exit(1);
+					ux.log(`${chalk.red.bold('ERROR:')} Failed to download YTSubConverter.`);
+					ux.exit(1);
 				});
 
-			CliUx.ux.action.stop();
+			ux.action.stop();
 		}
 
 		debug('YTSubConverter was found!');
@@ -69,41 +68,40 @@ export async function findYTSubConverter(): Promise<string> {
 
 		if (wineExists) {
 			if (!fs.existsSync(path.resolve(__dirname, '../../.deps/YTSubConverter.exe'))) {
-				CliUx.ux.action.start('Downloading YTSubConverter.exe', 'downloading', { stdout: true });
+				ux.action.start('Downloading YTSubConverter.exe', 'downloading', { stdout: true });
 
-				const githubApiResponse: GithubApiResponse = await got('https://api.github.com/repos/arcusmaximus/YTSubConverter/releases/latest')
-					.json();
-				debug(githubApiResponse);
-				const asset = githubApiResponse.assets.find((item) => item.name.endsWith('.exe'));
+				const githubApiResponse = await axios.get<GithubApiResponse>('https://api.github.com/repos/arcusmaximus/YTSubConverter/releases/latest');
+				debug(githubApiResponse.data);
+				const asset = githubApiResponse.data.assets.find((item) => item.name.endsWith('.exe'));
 				debug(asset);
 				if (!asset) {
-					CliUx.ux.log(`${chalk.red.bold('ERROR:')} Could not find YTSubConverter.exe download link, please try again.`);
-					CliUx.ux.exit(0);
+					ux.log(`${chalk.red.bold('ERROR:')} Could not find YTSubConverter.exe download link, please try again.`);
+					ux.exit(0);
 				}
 
 				const writeStream = fs.createWriteStream(path.resolve(__dirname, '../../.deps/YTSubConverter.exe'));
-				const stream = got.stream(asset!.browser_download_url)
-					.on('error', (error) => {
+				const response = await axios.get(asset!.browser_download_url, { responseType: 'stream' })
+					.catch((error) => {
 						debug(error);
-						CliUx.ux.log(`${chalk.red.bold('ERROR:')} Failed to download YTSubConverter.`);
-						CliUx.ux.exit(1);
+						ux.log(`${chalk.red.bold('ERROR:')} Failed to download YTSubConverter.`);
+						ux.exit(1);
 					});
 
-				stream.pipe(writeStream)
-					.on('error', (error) => {
+				response.data.pipe(writeStream)
+					.on('error', (error: never) => {
 						debug(error);
-						CliUx.ux.log(`${chalk.red.bold('ERROR:')} Failed to download YTSubConverter.`);
-						CliUx.ux.exit(1);
+						ux.log(`${chalk.red.bold('ERROR:')} Failed to download YTSubConverter.`);
+						ux.exit(1);
 					});
 
-				CliUx.ux.action.stop();
+				ux.action.stop();
 			}
 
 			debug('YTSubConverter was found!');
 			return `wine ${path.resolve(__dirname, '../../.deps/YTSubConverter.exe')}`;
 		}
 
-		const { body: githubApiResponse }: { body: GithubApiResponse } = await got('https://api.github.com/repos/arcusmaximus/YTSubConverter/releases/latest').json();
+		const { data: githubApiResponse }: { data: GithubApiResponse } = await axios.get<GithubApiResponse>('https://api.github.com/repos/arcusmaximus/YTSubConverter/releases/latest');
 		// ! TODO: Remove directive below
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const macOsUrl = githubApiResponse.assets.find((item) => item.name.endsWith('.dmg'));
@@ -112,38 +110,38 @@ export async function findYTSubConverter(): Promise<string> {
 	}
 
 	if (!wineExists) {
-		CliUx.ux.log(`${chalk.red.bold('ERROR:')} Wine was not found, please install it first`);
-		CliUx.ux.exit(0);
+		ux.log(`${chalk.red.bold('ERROR:')} Wine was not found, please install it first`);
+		ux.exit(0);
 	}
 
 	if (!fs.existsSync(path.resolve(__dirname, '../../.deps/YTSubConverter.exe'))) {
-		CliUx.ux.action.start('Downloading YTSubConverter.exe', 'downloading', { stdout: true });
+		ux.action.start('Downloading YTSubConverter.exe', 'downloading', { stdout: true });
 
-		const githubApiResponse: GithubApiResponse = await got('https://api.github.com/repos/arcusmaximus/YTSubConverter/releases/latest').json();
-		debug(githubApiResponse);
-		const asset = githubApiResponse.assets.find((item) => item.name.endsWith('.exe'));
+		const githubApiResponse = await axios.get<GithubApiResponse>('https://api.github.com/repos/arcusmaximus/YTSubConverter/releases/latest');
+		debug(githubApiResponse.data);
+		const asset = githubApiResponse.data.assets.find((item) => item.name.endsWith('.exe'));
 		debug(asset);
 		if (!asset) {
-			CliUx.ux.log(`${chalk.red.bold('ERROR:')} Could not find YTSubConverter.exe download link, please try again.`);
-			CliUx.ux.exit(0);
+			ux.log(`${chalk.red.bold('ERROR:')} Could not find YTSubConverter.exe download link, please try again.`);
+			ux.exit(0);
 		}
 
 		const writeStream = fs.createWriteStream(path.resolve(__dirname, '../../.deps/YTSubConverter.exe'));
-		const stream = got.stream(asset!.browser_download_url)
-			.on('error', (error) => {
+		const response = await axios.get(asset!.browser_download_url, { responseType: 'stream' })
+			.catch((error) => {
 				debug(error);
-				CliUx.ux.log(`${chalk.red.bold('ERROR:')} Failed to download YTSubConverter.`);
-				CliUx.ux.exit(1);
+				ux.log(`${chalk.red.bold('ERROR:')} Failed to download YTSubConverter.`);
+				ux.exit(1);
 			});
 
-		stream.pipe(writeStream)
-			.on('error', (error) => {
+		response.data.pipe(writeStream)
+			.on('error', (error: never) => {
 				debug(error);
-				CliUx.ux.log(`${chalk.red.bold('ERROR:')} Failed to download YTSubConverter.`);
-				CliUx.ux.exit(1);
+				ux.log(`${chalk.red.bold('ERROR:')} Failed to download YTSubConverter.`);
+				ux.exit(1);
 			});
 
-		CliUx.ux.action.stop();
+		ux.action.stop();
 	}
 
 	debug('YTSubConverter was found!');

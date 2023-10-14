@@ -1,34 +1,40 @@
-import ytdl from 'ytdl-core';
-import Ffmpeg from 'fluent-ffmpeg';
+import { ux } from '@oclif/core';
+import axios from 'axios';
+import chalk from 'chalk';
+import ProgressBar from 'cli-progress';
+import Debug from 'debug';
 import ffmpegPath from 'ffmpeg-static';
 import { path as ffprobePath } from 'ffprobe-static';
-import Debug from 'debug';
-import { CliUx } from '@oclif/core';
-import chalk from 'chalk';
+import Ffmpeg from 'fluent-ffmpeg';
+import langs from 'langs';
+import child_process from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
-import ProgressBar from 'cli-progress';
-import got from 'got';
-import child_process from 'node:child_process';
-import langs from 'langs';
 import stream from 'node:stream';
 import util from 'node:util';
+import ytdl from 'ytdl-core';
 
 const pipeline = util.promisify(stream.pipeline);
+const exec = util.promisify(child_process.exec);
 
 const debug = Debug('vdl');
 
 export interface Answers {
-	url: string;
-	output: string;
-	subtitles: boolean;
 	extension: string;
 	keep: boolean;
 	'no-subs-embed': boolean;
+	output: string;
+	subtitles: boolean;
+	url: string;
 }
 
 export async function download(answers: Answers, YTSubConverterCommand: string): Promise<void> {
 	debug(answers);
+
+	if (!ffmpegPath || !ffprobePath) {
+		ux.log(`${chalk.red.bold('ERROR:')} Cannot find ffmpeg/ffprobe.`);
+		ux.exit(1);
+	}
 
 	// Set paths for fluent-ffmpeg from static binaries
 	debug(`Ffmpeg path: ${ffmpegPath}`);
@@ -38,8 +44,8 @@ export async function download(answers: Answers, YTSubConverterCommand: string):
 
 	const info = await ytdl.getInfo(answers.url)
 		.catch(() => {
-			CliUx.ux.log(`${chalk.red.bold('ERROR:')} Failed to get video info.`);
-			CliUx.ux.exit(1);
+			ux.log(`${chalk.red.bold('ERROR:')} Failed to get video info.`);
+			ux.exit(1);
 		});
 
 	if (!info) {
@@ -52,9 +58,11 @@ export async function download(answers: Answers, YTSubConverterCommand: string):
 
 	const captions = info.player_response.captions?.playerCaptionsTracklistRenderer.captionTracks;
 
-	const downloadBar = new ProgressBar.MultiBar({ hideCursor: true },
-		ProgressBar.Presets.shades_classic);
-	CliUx.ux.action.start('Downloading video');
+	const downloadBar = new ProgressBar.MultiBar(
+		{ hideCursor: true },
+		ProgressBar.Presets.shades_classic,
+	);
+	ux.action.start('Downloading video');
 
 	// Download inside a promise, so it can be awaited
 	const videoDownloadPromise = new Promise<void>((resolve) => {
@@ -122,57 +130,54 @@ export async function download(answers: Answers, YTSubConverterCommand: string):
 	let thumbnailDownload = Promise.resolve();
 
 	if (thumbnails.length > 0) {
-		const { url } = thumbnails[thumbnails.length - 1];
+		const { url } = thumbnails.at(-1)!;
 		thumbnailDownload = pipeline(
-			got.stream(url),
+			(await axios.get(url, { responseType: 'stream' })).data,
 			fs.createWriteStream(path.resolve(`${answers.output}.${url.split('/').pop()?.split('.').pop()
 				?.split('?')[0] ?? 'jpg'}`)),
 		);
 		debug('Added thumbnail download');
 	}
 
-	const subtitleDownloadPromise = new Promise<void>((resolve) => {
+	const subtitleDownloadPromise = (async () => {
 		if (captions && answers.subtitles) {
 			const promises: Promise<void>[] = [];
 			for (const caption of captions) {
-				promises.push(new Promise((resolvePromise) => {
+				promises.push((async () => {
 					debug(caption.baseUrl);
+
 					// Download subtitles in srv3 format (YT proprietary format afaik)
-					pipeline(
-						got.stream(`${caption.baseUrl}&fmt=srv3`),
+					await pipeline(
+						(await axios.get(`${caption.baseUrl}&fmt=srv3`, { responseType: 'stream' })).data,
 						fs.createWriteStream(path.resolve(`${answers.output}.${caption.name.simpleText}.srv3`)),
-					).then(() => {
-						debug(`Converting ${caption.name.simpleText}`);
-						// eslint-disable-next-line max-len
-						// Convert the subtitle from .srv3 to .ass with the --visual parameter to recreate how it'd look on YT
-						child_process.exec(`${YTSubConverterCommand} --visual "${answers.output}.${caption.name.simpleText}.srv3"`,
+					);
+
+					debug(`Converting ${caption.name.simpleText}`);
+					// eslint-disable-next-line max-len
+					// Convert the subtitle from .srv3 to .ass with the --visual parameter to recreate how it'd look on YT
+					try {
+						await exec(
+							`${YTSubConverterCommand} --visual "${answers.output}.${caption.name.simpleText}.srv3"`,
 							{
 								cwd: process.cwd(),
 							},
-							(error) => {
-								if (error) {
-									debug(error);
-									CliUx.ux.log(`${chalk.red.bold('ERROR:')} Failed to download subtitles.`);
-									CliUx.ux.exit(1);
-								}
-								if (!answers.keep) {
-									try {
-										fs.unlinkSync(path.resolve(`${answers.output}.${caption.name.simpleText}.srv3`));
-									} catch {}
-								}
-								debug(`Finished downloading and converting ${caption.name.simpleText}`);
-								resolvePromise();
-							});
-					}).catch((error) => {
+						);
+						if (!answers.keep) {
+							try {
+								fs.unlinkSync(path.resolve(`${answers.output}.${caption.name.simpleText}.srv3`));
+							} catch {}
+						}
+						debug(`Finished downloading and converting ${caption.name.simpleText}`);
+					} catch (error) {
 						debug(error);
-						CliUx.ux.log(`${chalk.red.bold('ERROR:')} Failed to download subtitles.`);
-						CliUx.ux.exit(1);
-					});
-				}));
+						ux.log(`${chalk.red.bold('ERROR:')} Failed to download subtitles.`);
+						ux.exit(1);
+					}
+				})());
 			}
-			Promise.all(promises).then(() => resolve());
-		} else resolve();
-	});
+			await Promise.all(promises);
+		}
+	})();
 
 	await Promise.all([
 		videoDownloadPromise,
@@ -183,9 +188,9 @@ export async function download(answers: Answers, YTSubConverterCommand: string):
 	debug('Done downloading');
 
 	downloadBar.stop();
-	CliUx.ux.action.stop();
+	ux.action.stop();
 
-	CliUx.ux.action.start('Merging files');
+	ux.action.start('Merging files');
 
 	// Figure out a file extension, default to MKV
 	const fileExt = answers.extension === 'auto' ? 'mkv' : answers.extension;
@@ -195,9 +200,9 @@ export async function download(answers: Answers, YTSubConverterCommand: string):
 	const mergeCommand = Ffmpeg({
 		logger: {
 			debug: () => {},
+			error: debug,
 			info: debug,
 			warn: debug,
-			error: debug,
 		},
 	})
 		.outputOptions('-metadata', `title=${info.videoDetails.title}`)
@@ -232,7 +237,7 @@ export async function download(answers: Answers, YTSubConverterCommand: string):
 			const file = path.resolve(`${answers.output}.${caption.name.simpleText}.ass`);
 			debug(`Added input: ${file}`);
 			mergeCommand.addInput(file);
-			const languageCode = langs.where('1', caption.languageCode)!['2'];
+			const languageCode = langs.where('1', caption.languageCode.toString())!['2'];
 			mergeCommand
 				.outputOptions(`-metadata:s:s:${i}`, `language=${languageCode}`)
 				// Add 2 because of the video and audio file
@@ -247,8 +252,8 @@ export async function download(answers: Answers, YTSubConverterCommand: string):
 		})
 		.on('error', (error) => {
 			debug(error);
-			CliUx.ux.log(`${chalk.red.bold('ERROR:')} Failed to merge files.`);
-			CliUx.ux.exit(1);
+			ux.log(`${chalk.red.bold('ERROR:')} Failed to merge files.`);
+			ux.exit(1);
 		})
 		.on('finish', () => {
 			if (!answers.keep) {
@@ -266,8 +271,8 @@ export async function download(answers: Answers, YTSubConverterCommand: string):
 				}
 			}
 
-			CliUx.ux.action.stop();
-			CliUx.ux.log(`${chalk.green.bold()}Finished!`);
+			ux.action.stop();
+			ux.log(`${chalk.green.bold()}Finished!`);
 		})
 		.on('end', () => {
 			if (!answers.keep) {
@@ -284,7 +289,7 @@ export async function download(answers: Answers, YTSubConverterCommand: string):
 					}
 				}
 			}
-			CliUx.ux.action.stop();
-			CliUx.ux.log(`${chalk.green.bold()}Finished!`);
+			ux.action.stop();
+			ux.log(`${chalk.green.bold()}Finished!`);
 		});
 }
