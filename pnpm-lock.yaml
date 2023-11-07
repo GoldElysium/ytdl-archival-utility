@@ -83,8 +83,8 @@ devDependencies:
     specifier: 2.1.22
     version: 2.1.22
   '@types/inquirer':
-    specifier: 8.2.5
-    version: 8.2.5
+    specifier: 8.2.10
+    version: 8.2.10
   '@types/langs':
     specifier: 2.0.2
     version: 2.0.2
@@ -1219,10 +1219,11 @@ packages:
     resolution: {integrity: sha512-FD+nQWA2zJjh4L9+pFXqWOi0Hs1ryBCfI+985NjluQ1p8EYtoLvjLOKidXBtZ4/IcxDX4o8/E8qDS3540tNliw==}
     dev: true
 
-  /@types/inquirer@8.2.5:
-    resolution: {integrity: sha512-QXlzybid60YtAwfgG3cpykptRYUx2KomzNutMlWsQC64J/WG/gQSl+P4w7A21sGN0VIxRVava4rgnT7FQmFCdg==}
+  /@types/inquirer@8.2.10:
+    resolution: {integrity: sha512-IdD5NmHyVjWM8SHWo/kPBgtzXatwPkfwzyP3fN1jF2g9BWt5WO+8hL2F4o2GKIYsU40PpqeevuUWvkS/roXJkA==}
     dependencies:
       '@types/through': 0.0.31
+      rxjs: 7.8.1
     dev: true
 
   /@types/json-schema@7.0.13:
