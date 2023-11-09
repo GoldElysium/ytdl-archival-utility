@@ -71,8 +71,8 @@ devDependencies:
     specifier: 1.2.1
     version: 1.2.1
   '@types/debug':
-    specifier: 4.1.9
-    version: 4.1.9
+    specifier: 4.1.12
+    version: 4.1.12
   '@types/ffmpeg-static':
     specifier: 3.0.1
     version: 3.0.1
@@ -1191,8 +1191,8 @@ packages:
     resolution: {integrity: sha512-N+I0Iho/m1c63+g3E7ZgfGnxGZIRAoj9TUU7j8NFCt+RowqpTLQanLdcfzrCyiHtdEI2MKF1vLMgdyE5rETSnw==}
     dev: true
 
-  /@types/debug@4.1.9:
-    resolution: {integrity: sha512-8Hz50m2eoS56ldRlepxSBa6PWEVCtzUo/92HgLc2qTMnotJNIm7xP+UZhyWoYsyOdd5dxZ+NZLb24rsKyFs2ow==}
+  /@types/debug@4.1.12:
+    resolution: {integrity: sha512-vIChWdVG3LG1SMxEvI/AK+FWJthlrqlTu7fbrlywTkkaONwk/UAGaULXRlf8vkzFBLVm0zkMdCquhL5aOjhXPQ==}
     dependencies:
       '@types/ms': 0.7.32
     dev: true
