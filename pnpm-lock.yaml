@@ -65,8 +65,8 @@ devDependencies:
     specifier: 4.3.8
     version: 4.3.8
   '@types/cli-progress':
-    specifier: 3.11.3
-    version: 3.11.3
+    specifier: 3.11.5
+    version: 3.11.5
   '@types/command-exists':
     specifier: 1.2.1
     version: 1.2.1
@@ -751,7 +751,7 @@ packages:
     resolution: {integrity: sha512-fNEMG5DzJHhYmI3MgpByTvltBOMyFcnRIUMxbiz2ai8rhaYgaTHMG3Q38HcosfIvtw9nCjxpcQtC8MN8QtVCcA==}
     engines: {node: '>=14.0.0'}
     dependencies:
-      '@types/cli-progress': 3.11.3
+      '@types/cli-progress': 3.11.5
       ansi-escapes: 4.3.2
       ansi-styles: 4.3.0
       cardinal: 2.1.1
@@ -1181,8 +1181,8 @@ packages:
     resolution: {integrity: sha512-yW/qTM4mRBBcsA9Xw9FbcImYtFPY7sgr+G/O5RDYVmxiy9a+pE5FyoFUi8JYCZY5nicj8atrr1pcfPiYpeNGOA==}
     dev: true
 
-  /@types/cli-progress@3.11.3:
-    resolution: {integrity: sha512-/+C9xAdVtc+g5yHHkGBThgAA8rYpi5B+2ve3wLtybYj0JHEBs57ivR4x/zGfSsplRnV+psE91Nfin1soNKqz5Q==}
+  /@types/cli-progress@3.11.5:
+    resolution: {integrity: sha512-D4PbNRbviKyppS5ivBGyFO29POlySLmA2HyUFE4p5QGazAMM3CwkKWcvTl8gvElSuxRh6FPKL8XmidX873ou4g==}
     dependencies:
       '@types/node': 20.8.6
     dev: true
