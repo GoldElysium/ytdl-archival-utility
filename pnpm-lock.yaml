@@ -68,8 +68,8 @@ devDependencies:
     specifier: 3.11.3
     version: 3.11.3
   '@types/command-exists':
-    specifier: 1.2.1
-    version: 1.2.1
+    specifier: 1.2.3
+    version: 1.2.3
   '@types/debug':
     specifier: 4.1.9
     version: 4.1.9
@@ -1187,8 +1187,8 @@ packages:
       '@types/node': 20.8.6
     dev: true
 
-  /@types/command-exists@1.2.1:
-    resolution: {integrity: sha512-N+I0Iho/m1c63+g3E7ZgfGnxGZIRAoj9TUU7j8NFCt+RowqpTLQanLdcfzrCyiHtdEI2MKF1vLMgdyE5rETSnw==}
+  /@types/command-exists@1.2.3:
+    resolution: {integrity: sha512-PpbaE2XWLaWYboXD6k70TcXO/OdOyyRFq5TVpmlUELNxdkkmXU9fkImNosmXU1DtsNrqdUgWd/nJQYXgwmtdXQ==}
     dev: true
 
   /@types/debug@4.1.9:
