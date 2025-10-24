@@ -80,8 +80,8 @@ devDependencies:
     specifier: 2.0.1
     version: 2.0.1
   '@types/fluent-ffmpeg':
-    specifier: 2.1.22
-    version: 2.1.22
+    specifier: 2.1.28
+    version: 2.1.28
   '@types/inquirer':
     specifier: 8.2.5
     version: 8.2.5
@@ -1209,8 +1209,8 @@ packages:
     resolution: {integrity: sha512-V5CrKUfms0lBGSXliKmKzSFFZWgJusQks1YfjRI/+2dXFF+aK7qBAarCe/ryYHQI44jYQX7xtlgH0fCuJepuGQ==}
     dev: true
 
-  /@types/fluent-ffmpeg@2.1.22:
-    resolution: {integrity: sha512-ZZPDDrDOb2Ahp5fxZzuw64f0rCcviv+SDuCyJ1PIF/UFn9wNHtb/bY8Dj/2nrbQ7SNsGI7gaO2wJVkkU2HBcMg==}
+  /@types/fluent-ffmpeg@2.1.28:
+    resolution: {integrity: sha512-5ovxsDwBcPfJ+eYs1I/ZpcYCnkce7pvH9AHSvrZllAp1ZPpTRDZAFjF3TRFbukxSgIYTTNYePbS0rKUmaxVbXw==}
     dependencies:
       '@types/node': 20.8.6
     dev: true
