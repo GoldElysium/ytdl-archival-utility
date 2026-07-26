@@ -74,8 +74,8 @@ devDependencies:
     specifier: 4.1.9
     version: 4.1.9
   '@types/ffmpeg-static':
-    specifier: 3.0.1
-    version: 3.0.1
+    specifier: 3.0.3
+    version: 3.0.3
   '@types/ffprobe-static':
     specifier: 2.0.1
     version: 2.0.1
@@ -1201,8 +1201,8 @@ packages:
     resolution: {integrity: sha512-Q5Vn3yjTDyCMV50TB6VRIbQNxSE4OmZR86VSbGaNpfUolm0iePBB4KdEEHmxoY5sT2+2DIvXW0rvMDP2nHZ4Mg==}
     dev: true
 
-  /@types/ffmpeg-static@3.0.1:
-    resolution: {integrity: sha512-hEJdQMv/g1olk9qTiWqh23BfbKsDKE6Tc7DilNJWF1MgZsU9fYOPKrgQ448vfT7aP2Yt5re9vgJDVv9TXEoTyQ==}
+  /@types/ffmpeg-static@3.0.3:
+    resolution: {integrity: sha512-wmjANN0CiYs5clQESK+xE6plet0y9ndqaNBdQx4IIw7ZbPBMQw+14Lq4ky2WqMqGlpFJ9ZUxU0O43TvVZziyyA==}
     dev: true
 
   /@types/ffprobe-static@2.0.1:
